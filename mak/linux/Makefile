@@ -129,6 +129,7 @@ EXTRA_CFLAGS += -DCONFIG_LPS
 endif
 
 EXTRA_LDFLAGS += --strip-debug
+ccflags-y += $(EXTRA_CFLAGS)
 
 ########################## Features ###########################
 
@@ -252,4 +253,3 @@ config_r:
 clean:
 	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KSRC) M=$(WDRV_DIR)  clean
 endif
-

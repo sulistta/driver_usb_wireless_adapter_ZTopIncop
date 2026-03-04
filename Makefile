@@ -25,7 +25,7 @@
 ## o CONFIG_ZT9101XV30_SUPPORT     = enable support ZT9101xV30
 ## o CONFGI_NAME                   = any string(zt9101_ztopmac)
 ################################################################################
-  export WDRV_DIR ?= $(shell pwd)
+  export WDRV_DIR := $(CURDIR)
   SUBDIR = mak
   PLATDIR = platform
   CT                       ?= n
@@ -48,5 +48,3 @@
 include $(WDRV_DIR)/$(PLATDIR)/platform.mak
 
 include $(WDRV_DIR)/$(SUBDIR)/linux/Makefile
-
-

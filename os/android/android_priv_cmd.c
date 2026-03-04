@@ -379,10 +379,12 @@ static int set_dev_nlo(struct pno_nlo_info *nlo_info,
 
     int i = 0;
     struct file *fp;
-    mm_segment_t fs;
     loff_t pos = 0;
     u8 *source = NULL;
     long len = 0;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
+    mm_segment_t fs;
+#endif
 
     AND_DBG("start");
 
@@ -419,19 +421,27 @@ static int set_dev_nlo(struct pno_nlo_info *nlo_info,
         return 0;
     }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
     fs = get_fs();
     set_fs(KERNEL_DS);
+#endif
 
     source = wl_zmalloc(2048);
 
     if (source != NULL)
     {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 114)
+        len = kernel_read(fp, source, len, &pos);
+#else
         len = vfs_read(fp, source, len, &pos);
+#endif
         do_aly_cipher_list(nlo_info, source);
         wl_mfree(source, 2048);
     }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
     set_fs(fs);
+#endif
     filp_close(fp, NULL);
 
     AND_DBG("-%s-\n", __func__);
@@ -1116,4 +1126,3 @@ int zt_android_priv_cmd_ioctl(struct net_device *net, struct ifreq *ifr,
     zt_kfree(command);
     return ret;
 }
-

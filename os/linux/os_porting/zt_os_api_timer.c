@@ -60,7 +60,7 @@ zt_inline zt_s32 zt_os_api_timer_set(zt_os_api_timer_t *ptimer, zt_u32 intv_ms)
 
 zt_inline zt_s32 zt_os_api_timer_unreg(zt_os_api_timer_t *ptimer)
 {
-    del_timer(ptimer);
+    timer_delete_sync(ptimer);
     return 0;
 }
 
@@ -73,4 +73,3 @@ zt_s32 zt_os_api_timer_term(void)
 {
     return 0;
 }
-
