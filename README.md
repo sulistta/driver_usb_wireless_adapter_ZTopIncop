@@ -34,11 +34,13 @@ sudo install -D -m 644 ./zt9101_ztopmac_usb.ko "/lib/modules/$(uname -r)/extra/z
 sudo depmod -a
 ```
 
-2. Install config and use absolute firmware paths:
+2. Install firmware to a boot-safe path and update config:
 ```bash
+sudo install -D -m 644 ./fw/ZT9101_fw_c1ab8ba.bin /lib/firmware/zt9101/ZT9101_fw_c1ab8ba.bin
+sudo install -D -m 644 ./fw/ZT9101V30_fw_8546b3a.bin /lib/firmware/zt9101/ZT9101V30_fw_8546b3a.bin
 sudo install -D -m 644 ./wifi.cfg /etc/zt9101/wifi.cfg
-sudo sed -i "s|^fw=.*|fw=$HOME/projects/driver_usb_wireless_adapter_ZTopIncop/fw/ZT9101_fw_c1ab8ba.bin|" /etc/zt9101/wifi.cfg
-sudo sed -i "s|^fw1=.*|fw1=$HOME/projects/driver_usb_wireless_adapter_ZTopIncop/fw/ZT9101V30_fw_8546b3a.bin|" /etc/zt9101/wifi.cfg
+sudo sed -i "s|^fw=.*|fw=/lib/firmware/zt9101/ZT9101_fw_c1ab8ba.bin|" /etc/zt9101/wifi.cfg
+sudo sed -i "s|^fw1=.*|fw1=/lib/firmware/zt9101/ZT9101V30_fw_8546b3a.bin|" /etc/zt9101/wifi.cfg
 ```
 
 3. Configure module option and boot auto-load:
@@ -53,9 +55,17 @@ sudo modprobe -r zt9101_ztopmac_usb
 sudo modprobe zt9101_ztopmac_usb
 ```
 
+5. Validate after reboot:
+```bash
+lsmod | grep zt9101
+iw dev
+nmcli device status
+```
+
 ## Notes
 - If module loading fails with signature errors, disable Secure Boot or sign the module.
 - After kernel updates, rebuild and reinstall the `.ko` for the new kernel.
+- Keep long commands on a single line (or use `\`) to avoid creating wrong paths by accident.
 
 ## Images
 ![ZTopInc WiFi Adapter](https://github.com/apris2/driver_usb_wireless_adapter_ZTopIncop/raw/main/IMG1.jpg)
