@@ -1,0 +1,17 @@
+# Kernel module build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.order
+*.symvers
+*.cmd
+
+# Kbuild generated files/directories
+Module.symvers
+modules.order
+.tmp_versions/
+
+# Local build logs
+build.log

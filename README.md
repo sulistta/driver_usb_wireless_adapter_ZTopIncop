@@ -1,42 +1,62 @@
+# Driver WiFi ZTopInc for Linux
 
-# Driver WiFi ZTopInc for Linux  
+Linux WiFi driver for the ZTopInc 802.11n USB adapter (`350b:9101`), based on the original upstream project and updated for newer Ubuntu kernels.
 
-This repository provides a **Linux WiFi driver** for the **ZTopInc 802.11n USB wireless adapter NIC** (**ID: 350b:9101**) , ensuring compatibility with **Ubuntu 24.04 LTS** and **Linux kernel 6.11.0-19-generic**.  
+## Tested Environment
+- Device: ZTopInc 802.11n USB adapter (`350b:9101`)
+- OS: Ubuntu 24.04 LTS
+- Kernel tested: `6.17.0-14-generic`
 
-It is a fork of [driver_wifi_ztopinc](https://codeberg.org/sallecta/driver_wifi_ztopinc.git) with **fixes and kernel support improvements**.  
+## What Was Updated
+- Build system fixes for newer Kbuild behavior.
+- Timer API updates for newer kernels.
+- `cfg80211` callback signature updates for kernel 6.17+.
+- File I/O compatibility update in Android helper code path.
 
-## Features & Fixes  
-- **Fixed** an issue in `usb.c` at line 1114 and related sections.  
-- **Optimized** for **Ubuntu 24.04 (Noble)** and **Linux kernel 6.11.0-19-generic**.  
-
-## Installation Guide  
-
-### Step 1: Install Dependencies  
-Before compiling the **Linux WiFi driver**, install the required packages:  
-
+## Build and Load
 ```bash
-sudo apt update
-sudo apt install dkms build-essential git
-```
-
-### Step 2: Clone, Build, and Load the Driver  
-Run the following commands to clone this repository, navigate to the directory, and compile the driver:  
-
-```bash
-make
+make -j"$(nproc)"
+sudo modprobe cfg80211
 sudo insmod ./zt9101_ztopmac_usb.ko cfg=./wifi.cfg
 ```
 
-### Step 3: Troubleshooting  
-If the driver fails to load due to **module signature errors**, disable **Secure Boot** in your BIOS.  
+## Validate
+```bash
+lsmod | grep zt9101
+ip link | grep -Ei 'wl|wlan'
+sudo dmesg -T | tail -n 120
+```
 
-## System Compatibility  
-- **Device**: ZTopInc 802.11n USB Wireless Adapter (**ID: 350b:9101**)  
-- **OS**: Ubuntu 24.04.2 LTS (Noble)  
-- **Kernel**: 6.11.0-19-generic  
+## Auto-load on Boot
+1. Install the module into the current kernel module tree:
+```bash
+sudo install -D -m 644 ./zt9101_ztopmac_usb.ko "/lib/modules/$(uname -r)/extra/zt9101_ztopmac_usb.ko"
+sudo depmod -a
+```
 
-## Images  
-![ZTopInc WiFi Adapter](https://github.com/apris2/driver_usb_wireless_adapter_ZTopIncop/raw/main/IMG1.jpg)  
-![ZTopInc WiFi Adapter](https://github.com/apris2/driver_usb_wireless_adapter_ZTopIncop/raw/main/IMG2.jpg)  
+2. Install config and use absolute firmware paths:
+```bash
+sudo install -D -m 644 ./wifi.cfg /etc/zt9101/wifi.cfg
+sudo sed -i "s|^fw=.*|fw=$HOME/projects/driver_usb_wireless_adapter_ZTopIncop/fw/ZT9101_fw_c1ab8ba.bin|" /etc/zt9101/wifi.cfg
+sudo sed -i "s|^fw1=.*|fw1=$HOME/projects/driver_usb_wireless_adapter_ZTopIncop/fw/ZT9101V30_fw_8546b3a.bin|" /etc/zt9101/wifi.cfg
+```
 
----  
+3. Configure module option and boot auto-load:
+```bash
+echo 'options zt9101_ztopmac_usb cfg=/etc/zt9101/wifi.cfg' | sudo tee /etc/modprobe.d/zt9101_ztopmac_usb.conf
+echo 'zt9101_ztopmac_usb' | sudo tee /etc/modules-load.d/zt9101_ztopmac_usb.conf
+```
+
+4. Test without reboot:
+```bash
+sudo modprobe -r zt9101_ztopmac_usb
+sudo modprobe zt9101_ztopmac_usb
+```
+
+## Notes
+- If module loading fails with signature errors, disable Secure Boot or sign the module.
+- After kernel updates, rebuild and reinstall the `.ko` for the new kernel.
+
+## Images
+![ZTopInc WiFi Adapter](https://github.com/apris2/driver_usb_wireless_adapter_ZTopIncop/raw/main/IMG1.jpg)
+![ZTopInc WiFi Adapter](https://github.com/apris2/driver_usb_wireless_adapter_ZTopIncop/raw/main/IMG2.jpg)
